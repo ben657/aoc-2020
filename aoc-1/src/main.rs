@@ -15,6 +15,7 @@ fn main() {
 
 		let mut r1 = 0;
 		let mut r2 = 0;
+		let mut r3 = 0;
 
 		for &n in numbers.iter() {
 			if n == target_int {
@@ -28,16 +29,24 @@ fn main() {
 			let mut found = false;
 
 			for &n2 in numbers.iter() {
-				if n + n2 == target_int {
-					r1 = n;
-					r2 = n2;
-					found = true;
-					break;
+				if n + n2 < target_int {
+					for &n3 in numbers.iter() {
+						if n + n2 + n3 == target_int {
+							r1 = n;
+							r2 = n2;
+							r3 = n3;
+							found = true;
+							break;
+						}
+					}
+				}
+				if n + n2 >= target_int {
+					continue;
 				}
 			}
 
 			if found {break;}
 		}
 
-		println!("{} x {} = {}", r1, r2, r1 * r2);
+		println!("{} x {} x {} = {}", r1, r2, r3, r1 * r2 * r3);
 }

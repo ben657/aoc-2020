@@ -4,9 +4,9 @@ use regex::Regex;
 use regex::Captures;
 
 struct Policy {
-	character: String,
-	min: isize,
-	max: isize
+	character: char,
+	i1: usize,
+	i2: usize
 }
 
 struct Password {
@@ -14,28 +14,34 @@ struct Password {
 	text: String
 }
 
-fn ParsePasswordLine(line: &String) {
-	// let sections: Vec<&str> = line.split(' ').collect();
-
-	// let bounds = sections[0].split('-');
-	// let 
+fn parse_password_line(line: &str) -> Password {
 	let re = Regex::new(r"(\d+)-(\d+) ([A-z]): (.*)").unwrap();
-	let captures: Vec<regex::Captures> = re.captures_iter(line).collect();
+	let captures: Vec<Captures> = re.captures_iter(line).collect();
 	let capture = &captures[0];
 	
-	let min = capture[0].parse::<isize>().expect("");
-	let max = capture[1].parse::<isize>().expect("");
-	let character = String::from(&capture[2]);
-	let text = String::from(&capture[3]);
-
+	let i1 = capture[1].parse::<usize>().expect("");
+	let i2 = capture[2].parse::<usize>().expect("");
+	let character = &capture[3].chars().next().unwrap();
+	let text = String::from(&capture[4]);
 	Password {
 		policy: Policy {
-			min,
-			max,
-			character
+			i1,
+			i2,
+			character: *character
 		},
 		text
-	};
+	}
+}
+
+fn validate_password(password: &Password) -> bool {
+	let mut required_char_count = 0;
+	for (i, c) in password.text.chars().enumerate() {
+		if (i + 1 == password.policy.i1 || i + 1 == password.policy.i2) && c == password.policy.character {
+			required_char_count += 1;
+		}
+	}
+
+	required_char_count == 1
 }
 
 fn main() {
@@ -46,5 +52,13 @@ fn main() {
 	let file_contents = fs::read_to_string(filename).expect("Error reading file");
 	let lines = file_contents.lines();
 
-	lines.map(|l| ParsePasswordLine(l))
+	let passwords = lines.map(|l| parse_password_line(l));
+	let mut valid_count = 0;
+	for password in passwords {
+		if validate_password(&password) {
+			valid_count += 1;
+		}
+	}
+
+	println!("{} valid passwords", valid_count);
 }

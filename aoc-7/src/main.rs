@@ -69,6 +69,15 @@ fn find_parent_colors(target: &String, bags: &Vec<RefCell<Bag>>) -> HashSet<Stri
     parents_list
 }
 
+fn count_children(target: &String, bag_map: &HashMap<String, &RefCell<Bag>>) -> usize {
+    let bag = bag_map.get(target).unwrap().borrow();
+    let mut children = 0;
+    for (color, amount) in bag.can_contain.iter() {
+        children += amount * count_children(color, bag_map);
+    }
+    children
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
@@ -94,7 +103,7 @@ fn main() {
 
     let target_color = String::from("shiny gold");
 
-    let containers = find_parent_colors(&target_color, &bags);
+    let amount = count_children(&target_color, &bags_by_color);
 
-    println!("{:?}", containers.len());
+    println!("{:?}", amount);
 }

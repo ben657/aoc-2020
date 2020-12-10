@@ -38,11 +38,16 @@ fn main() {
 			}
 			all_answers.push(answers);
 		}
-		let result: HashSet<&char> = all_answers[0];
+		let mut result = all_answers[0].clone();
 		for i in 1 .. all_answers.len() {
-			result = result.intersection(&all_answers[i]).collect();
+			let set = &all_answers[i];
+			let intersection: Vec<char> = set.intersection(&result).cloned().collect();
+			result.clear();
+			for c in intersection {
+				result.insert(c);
+			}
 		}
-		unique_answers_per_group.push(answers.len());
+		unique_answers_per_group.push(result.len());
 	}
 
 	let mut sum = 0;

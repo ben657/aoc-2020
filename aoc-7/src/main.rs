@@ -72,8 +72,9 @@ fn find_parent_colors(target: &String, bags: &Vec<RefCell<Bag>>) -> HashSet<Stri
 fn count_children(target: &String, bag_map: &HashMap<String, &RefCell<Bag>>) -> usize {
     let bag = bag_map.get(target).unwrap().borrow();
     let mut children = 0;
+    
     for (color, amount) in bag.can_contain.iter() {
-        children += amount * count_children(color, bag_map);
+        children += amount + (amount * count_children(color, bag_map));
     }
     children
 }

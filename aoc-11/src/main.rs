@@ -120,6 +120,7 @@ fn main() {
     }
 
     println!("Stable after {} iterations", count);
+    print_state(&map);
 
     let mut occupied = 0;
     for row in map {

@@ -1,10 +1,30 @@
 use std::env;
 use std::fs;
 
+mod vec2i;
+use vec2i::Vec2;
+
 #[derive(Debug, Clone)]
 struct Tile {
     seat: bool,
     occupied: bool
+}
+
+fn is_occupied_in_direction(pos: Vec2, dir: Vec2, state: &Vec<Vec<Tile>>) -> bool {
+    let height = state.len() as isize;
+    let width = state[0].len() as isize;
+    let mut current_pos = pos.clone() + dir;
+    
+    while current_pos.x >= 0 && current_pos.x < width && current_pos.y >= 0 && current_pos.y < height {
+        let tile = &state[current_pos.y as usize][current_pos.x as usize];
+        if tile.seat {
+            return tile.occupied;
+        }
+
+        current_pos += dir;
+    }
+
+    false
 }
 
 fn run(state: &Vec<Vec<Tile>>) -> (Vec<Vec<Tile>>, bool) {
@@ -27,21 +47,30 @@ fn run(state: &Vec<Vec<Tile>>) -> (Vec<Vec<Tile>>, bool) {
             let tile = &state[y as usize][x as usize];
             if !tile.seat { continue }
             
+            let pos = Vec2 { x, y };
+
             let mut adjacent_occupied = 0;
-            for y2 in y - 1 .. y + 1 {
+            for y2 in y - 1 ..= y + 1 {
                 if y2 < 0 || y2 > height - 1 { continue }
 
-                for x2 in x - 1 .. x + 1 {
-                    if x2 < 0 || x2 > width - 1 { continue }
-                    let tile = &state[y2 as usize][x2 as usize];
-                    if tile.seat && tile.occupied { adjacent_occupied += 1}
+                for x2 in x - 1 ..= x + 1 {
+                    if x2 < 0 || x2 > width - 1 || (x2 == x && y2 == y) { continue }
+                    
+                    let check_pos = Vec2 {
+                        x: x2,
+                        y: y2
+                    };
+
+                    if is_occupied_in_direction(pos, check_pos - pos, state) {
+                        adjacent_occupied += 1;
+                    }
                 }
             }
-
+            
             if !tile.occupied && adjacent_occupied == 0 {
                 result[y as usize][x as usize].occupied = true;
                 stable = false;
-            } else if tile.occupied && adjacent_occupied >= 4 {
+            } else if tile.occupied && adjacent_occupied >= 5 {
                 result[y as usize][x as usize].occupied = false;
                 stable = false;
             }
@@ -88,8 +117,16 @@ fn main() {
         let (new_map, stable) = run(&map);
         if stable { break }
         else { map = new_map }
-        print_state(&map);
     }
 
     println!("Stable after {} iterations", count);
+
+    let mut occupied = 0;
+    for row in map {
+        for tile in row {
+            if tile.occupied { occupied += 1 }
+        }
+    }
+
+    println!("There are {} occupied seats", occupied);
 }

@@ -1,0 +1,19 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "11",
+			"program": "${workspaceFolder}/aoc-11/target/debug/aoc-11.exe",
+			"args": ["${workspaceFolder}/aoc-11/input.txt"],
+			"cwd": "${workspaceFolder}",
+			"stopOnEntry": false,
+			"sourceLanguages": ["rust"]
+
+		}
+	]
+}

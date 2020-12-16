@@ -1,6 +1,7 @@
 use std::env;
 use std::fs;
-use regex::Regex;
+
+mod vec2i;
 
 mod ship;
 use ship::*;
@@ -28,9 +29,10 @@ fn main() {
 
     let instructions: Vec<Instruction> = lines.map(|l| parse_instruction(l)).collect();
     for i in instructions.iter() {
+        println!("{:?}", ship);
         ship.run(i);
     }
 
     println!("{:?}", ship);
-    println!("Distance {}", ship.x.abs() + ship.y.abs())    
+    println!("Distance {}", ship.pos.x.abs() + ship.pos.y.abs())    
 }

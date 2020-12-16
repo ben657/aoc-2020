@@ -1,3 +1,5 @@
+use crate::vec2i::Vec2;
+
 #[derive(Debug, Copy, Clone)]
 pub enum Facing {
     N,
@@ -45,30 +47,25 @@ pub enum Instruction {
 }
 
 #[derive(Debug)]
-pub struct Ship {
-    pub x: isize,
-    pub y: isize,
-    pub facing: Facing
+pub struct Waypoint {
+    pub rel_pos: Vec2
 }
 
-impl Ship {
-    pub fn new() -> Self {
-        Self {
-            x: 0,
-            y: 0,
-            facing: Facing::E
+impl Waypoint {
+    pub fn new() -> Waypoint {
+        Waypoint {
+            rel_pos: Vec2 {x: 10, y: 1}
         }
     }
 
     pub fn run(&mut self, instruction: &Instruction) {
         match instruction {
-            Instruction::Translate(Facing::N, amount) => self.y += amount,
-            Instruction::Translate(Facing::E, amount) => self.x += amount,
-            Instruction::Translate(Facing::S, amount) => self.y -= amount,
-            Instruction::Translate(Facing::W, amount) => self.x -= amount,
+            Instruction::Translate(Facing::N, amount) => self.rel_pos.y += amount,
+            Instruction::Translate(Facing::E, amount) => self.rel_pos.x += amount,
+            Instruction::Translate(Facing::S, amount) => self.rel_pos.y -= amount,
+            Instruction::Translate(Facing::W, amount) => self.rel_pos.x -= amount,
             Instruction::Turn(TurnDirection::Left, amount) => self.turn_left(*amount),
             Instruction::Turn(TurnDirection::Right, amount) => self.turn_right(*amount),
-            Instruction::Forward(amount) => self.run(&Instruction::Translate(self.facing, *amount)),
             _ => {}
         };
     }
@@ -76,26 +73,44 @@ impl Ship {
     pub fn turn_left(&mut self, amount: isize) {
         let times = amount / 90;
         for _ in 0 .. times {
-            self.facing = match self.facing {
-                Facing::N => Facing::W,
-                Facing::E => Facing::N,
-                Facing::S => Facing::E,
-                Facing::W => Facing::S,
-                Facing::None => self.facing
-            };
+            let new_x = self.rel_pos.y * -1;
+            self.rel_pos.y = self.rel_pos.x;
+            self.rel_pos.x = new_x;
         }
     }
 
     pub fn turn_right(&mut self, amount: isize) {
         let times = amount / 90;
         for _ in 0 .. times {
-            self.facing = match self.facing {
-                Facing::N => Facing::E,
-                Facing::E => Facing::S,
-                Facing::S => Facing::W,
-                Facing::W => Facing::N,
-                Facing::None => self.facing
-            };
+            let new_y = self.rel_pos.x * -1;
+            self.rel_pos.x = self.rel_pos.y;
+            self.rel_pos.y = new_y;
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct Ship {
+    pub pos: Vec2,
+    pub waypoint: Waypoint
+}
+
+impl Ship {
+    pub fn new() -> Self {
+        Self {
+            pos: Vec2::zero(),
+            waypoint: Waypoint::new()
+        }
+    }
+
+    pub fn run(&mut self, instruction: &Instruction) {
+        match instruction {
+            Instruction::Forward(amount) => {
+                let direction = self.waypoint.rel_pos;
+                println!("{:?}, {}", direction, amount);
+                self.pos += direction * (*amount);
+            },
+            _ => self.waypoint.run(instruction)
         }
     }
 }
